@@ -1,0 +1,19 @@
+{
+  "name": "touch-typer",
+  "version": "1.0.0",
+  "description": "This is a simple touch typing practise application",
+  "main": "app.js",
+  "scripts": {
+    "dev": "lite-server",
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "keywords": [
+    "practise",
+    "typing"
+  ],
+  "author": "Jussi Latvaniemi",
+  "license": "ISC",
+  "devDependencies": {
+    "lite-server": "^2.4.0"
+  }
+}

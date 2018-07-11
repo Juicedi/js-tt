@@ -1,0 +1,20 @@
+#code-area {
+  font-family: consolas;
+}
+
+.highlight {
+  background-color: yellow;
+}
+
+.lowlight {
+  color: green;
+}
+
+span {
+  tab-size: 2;
+  white-space: pre;
+}
+
+span.highlight {
+  background-color: red;
+}
