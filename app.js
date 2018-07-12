@@ -63,6 +63,7 @@ function nextChar() {
 }
 
 function end() {
+  texts[0].input.disabled = true;
   console.log('ended');
 }
 
@@ -83,6 +84,21 @@ function start() {
 
 function initText(index) {
   texts[index].showText();
+  texts[index].input.addEventListener('keydown', function(e) {
+    e.preventDefault();
+    const chars = texts[0].lines[currentLine].characters;
+    this.value = '';
+
+    console.log(e.key);
+
+    if (
+      e.key === chars[currentChar].character ||
+      (e.key === 'Enter' && currentChar === chars.length - 1)
+    ) {
+      console.log('oikein');
+      nextChar();
+    }
+  });
   console.log(texts[index]);
   start();
 }
