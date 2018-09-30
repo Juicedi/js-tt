@@ -2,6 +2,7 @@ const Line = function(line) {
   this.characters = [];
   this.status = 'ok';
   this.comment = false;
+  this.shown = false;
   this.skipChars = [];
 
   let okChar = false;
@@ -46,3 +47,14 @@ Line.prototype.appendChars = function(target) {
     target.appendChild(newCharacter);
   }
 }
+
+/*
+Line.prototype.nextTypeableChar = function() {
+  for (var i = 0; i < this.characters; i++) {
+    if (this.characters[i].typeable) {
+      return i;
+    }
+  }
+  return -1;
+}
+*/

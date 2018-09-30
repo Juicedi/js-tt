@@ -1,22 +1,34 @@
 const Text = function(text, input, codearea) {
+  // HTML Element references
   this.input = input;
   this.codearea = codearea;
+
   this.lines = [];
   this.fullText = text;
 
   const textLines = text.split('\n');
-  const len = 40;
+  const len = textLines.length;
   for(let i = 0; i < len; i++) {
     const newLine = new Line(textLines[i]);
     this.lines.push(newLine);
   }
 }
 
-Text.prototype.showText = function() {
-  for (let i = 0; i < this.lines.length; i++) {
+Text.prototype.showText = function(startingLine) {
+  let validLineNr = 0;
+  let iterator = 0 + startingLine;
+
+  while (validLineNr < 2 && iterator < this.lines.length) {
+    if (this.lines[iterator].status !== 'skip') {
+      validLineNr++;
+    }
+
     const newLine = document.createElement('DIV');
-    this.lines[i].appendChars(newLine);
+    this.lines[iterator].appendChars(newLine);
     this.codearea.appendChild(newLine);
+
+    this.lines[iterator].shown = true;
+    iterator++;
   }
 }
 
@@ -38,6 +50,11 @@ Text.prototype.highlightChar = function(lineIndex, charIndex) {
     .classList.add('highlight');
 }
 
+/**
+ * Removes the highlight from given character.
+ * @param {Number} lineIndex - Line's index which has the character
+ * @param {Number} charIndex - Character index on the line
+ */
 Text.prototype.removeCharHighlight = function(lineIndex, charIndex) {
   const line = this.codearea.querySelector(`div:nth-child(${lineIndex + 1}`);
   line.querySelector(`span:nth-child(${charIndex + 1})`)
