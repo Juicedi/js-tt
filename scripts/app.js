@@ -15,9 +15,9 @@ var App = (function() {
 
       if (status === 200) {
         console.log(this);
-        callback(this, xhr.response);
+        callback(xhr.response);
       } else {
-        callback(status, xhr.response)
+        callback(xhr.response)
       }
     }
 
@@ -150,10 +150,13 @@ var App = (function() {
   }
 
   App.prototype.run = function() {
-    this.getText('./resources/text.txt', function(app, text) {
-      app.addNewText(text);
-      app.initText(app.texts.length - 1);
-    });
+    const cb = function(text) {
+      console.log('imma callback');
+      this.addNewText(text);
+      this.initText(this.texts.length - 1);
+    }
+
+    this.getText('./resources/text.txt', cb.bind(this));
   }
 
   return App;
