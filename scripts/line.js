@@ -39,6 +39,10 @@ const Line = (function() {
       this.comment = true;
       this.status = 'skip';
     }
+    // TODO: Check if line is inside of a block comment ie. below
+    /*
+    Imma block <--- this line here
+    */
 
     // Check if the line is empty
     if (line.length === 1 && (line[0] === '\n' || line[0] === '\r')) {
