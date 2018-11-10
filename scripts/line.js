@@ -3,9 +3,6 @@ const Line = (function() {
   // Constructor
   const Line = function(line) {
     this.characters = [];
-    this.status = 'ok';
-    this.comment = false;
-    this.shown = false;
     this.skipChars = [];
 
     let okChar = false;
@@ -16,7 +13,7 @@ const Line = (function() {
       const char = this.characters[i];
 
       if (!okChar) {
-        if (char.typeable) {
+        if (!char.whiteSpace) {
           okChar = true;
         } else {
           this.skipChars.push(i);
@@ -47,7 +44,16 @@ const Line = (function() {
     if (line.length === 1 && (line[0] === '\n' || line[0] === '\r')) {
       this.status = 'skip';
     }
+
+    if (this.characters.length === this.skipChars.length) {
+      this.status = 'skip';
+    }
   }
+
+  // Default values
+  Line.prototype.status = 'ok';
+  Line.prototype.comment = false;
+  Line.prototype.shown = false;
 
   Line.prototype.appendChars = function(target) {
     for (let i = 0; i < this.characters.length; i++) {

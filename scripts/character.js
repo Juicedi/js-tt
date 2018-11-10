@@ -6,23 +6,24 @@ const Character = (function() {
 
     if (character === ' ') {
       this.type = 'space';
-      this.typeable = false;
+      this.whiteSpace = true;
     }
 
     if (character === '\t') {
       this.type = 'tab';
-      this.typeable = false;
+      this.whiteSpace = true;
     }
 
     if (character === '\n' || character === '\r') {
       this.type = 'line-break';
-      this.typeable = false;
+      this.whiteSpace = true;
       this.character = '↓';
     }
   }
 
+  // Default values
   Character.prototype.type = 'char';
-  Character.prototype.typeable = true;
+  Character.prototype.whiteSpace = false;
 
   return Character;
 })();

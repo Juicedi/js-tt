@@ -99,7 +99,7 @@ var App = (function() {
   App.prototype.start = function() {
     let iter = 0;
     let comments = 0;
-    console.log(this.texts);
+    console.log(this.texts[0].lines);
 
     while (this.texts[0].lines[this.totalLinesCompleted + iter].shown === true) {
       if (!this.started && this.texts[0].lines[this.totalLinesCompleted + iter].status !== 'skip') {

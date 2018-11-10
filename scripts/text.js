@@ -2,7 +2,6 @@ const Text = (function() {
 
   // Constructor
   const Text = function(text, input, codearea) {
-    // HTML Element references
     this.input = input;
     this.codearea = codearea;
 
@@ -54,11 +53,6 @@ const Text = (function() {
       .classList.add('highlight');
   }
 
-  /**
-   * Removes the highlight from given character.
-   * @param {Number} lineIndex - Line's index which has the character
-   * @param {Number} charIndex - Character index on the line
-   */
   Text.prototype.removeCharHighlight = function(lineIndex, charIndex) {
     const line = this.codearea.querySelector(`div:nth-child(${lineIndex + 1}`);
     line.querySelector(`span:nth-child(${charIndex + 1})`)
