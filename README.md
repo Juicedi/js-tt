@@ -1,6 +1,7 @@
-#Touch typer
+# Touch typer
 
-This is just for javascript practice.
+I did this project just to practice all kinds of javascript things, mainly
+prototypes.
 
 Run the lite-server by using
-"npm run dev"
+```npm run dev```
