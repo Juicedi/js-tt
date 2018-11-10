@@ -30,7 +30,7 @@ var App = (function() {
   App.prototype.addNewText = function(text) {
     const input = document.getElementById('invis-input');
     const codeArea = document.getElementById('code-area');
-    this.texts.push(new Text(text, input, codeArea));
+    this.texts.push(new Text(text, input, codeArea, 10));
   }
 
   App.prototype.nextLine = function() {

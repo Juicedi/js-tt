@@ -1,7 +1,8 @@
 const Text = (function() {
 
   // Constructor
-  const Text = function(text, input, codearea) {
+  const Text = function(text, input, codearea, maxLines) {
+    this.maxLines = maxLines;
     this.input = input;
     this.codearea = codearea;
 
@@ -21,7 +22,7 @@ const Text = (function() {
     let validLineNr = 0;
     let iterator = 0 + startingLine;
 
-    while (validLineNr < 2 && iterator < this.lines.length) {
+    while (validLineNr < this.maxLines && iterator < this.lines.length) {
       if (this.lines[iterator].status !== 'skip') {
         validLineNr++;
       }
