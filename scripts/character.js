@@ -2,8 +2,6 @@ const Character = (function() {
 
   // Constructor
   const Character = function(character) {
-    this.type = 'char';
-    this.typeable = true;
     this.character = character;
 
     if (character === ' ') {
@@ -19,8 +17,12 @@ const Character = (function() {
     if (character === '\n' || character === '\r') {
       this.type = 'line-break';
       this.typeable = false;
+      this.character = '↓';
     }
   }
+
+  Character.prototype.type = 'char';
+  Character.prototype.typeable = true;
 
   return Character;
 })();
