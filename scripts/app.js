@@ -130,28 +130,26 @@ var App = (function() {
   }
 
   App.prototype.initText = function(index) {
-    const self = this;
-    this.texts[index].showText(0);
-
-    this.texts[index].input.addEventListener('keydown', function(e) {
+    const checkInput = function(e) {
       e.preventDefault();
-      const chars = self.texts[0].lines[self.totalLinesCompleted].characters;
-      self.value = '';
+      const chars = this.texts[0].lines[this.totalLinesCompleted].characters;
+      this.value = '';
 
       if (
-        e.key === chars[self.currentChar].character
-        || (e.key === 'Enter' && self.currentChar === chars.length - 1)
+        e.key === chars[this.currentChar].character
+        || (e.key === 'Enter' && this.currentChar === chars.length - 1)
       ) {
-        self.nextChar();
+        this.nextChar();
       }
-    });
+    }
 
+    this.texts[index].showText(0);
+    this.texts[index].input.addEventListener('keydown', checkInput.bind(this));
     this.start();
   }
 
   App.prototype.run = function() {
     const cb = function(text) {
-      console.log('imma callback');
       this.addNewText(text);
       this.initText(this.texts.length - 1);
     }
