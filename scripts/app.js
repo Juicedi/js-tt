@@ -28,9 +28,25 @@ var App = (function() {
     xhr.send();
   };
 
+  App.prototype.initTextFocus = function() {
+    var input = document.getElementById('invis-input');
+    var codeArea = document.getElementById('code-area');
+
+    codeArea.addEventListener('click', () => {
+      input.focus();
+    });
+    input.addEventListener('blur', () => {
+      codeArea.classList.add('blur');
+    });
+    input.addEventListener('focus', () => {
+      codeArea.classList.remove('blur');
+    });
+  };
+
   App.prototype.addNewText = function(text) {
     const input = document.getElementById('invis-input');
     const codeArea = document.getElementById('code-area');
+
     this.texts.push(new Text({
       codearea: codeArea,
       input,
@@ -182,6 +198,7 @@ var App = (function() {
   App.prototype.run = function() {
     const cb = function(text) {
       this.addNewText(text);
+      this.initTextFocus();
       this.currentTextIndex = this.texts.length - 1;
       this.initText();
     };
