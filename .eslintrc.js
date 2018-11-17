@@ -248,7 +248,7 @@ module.exports = {
         "require-atomic-updates": "error",
         "require-await": "error",
         "require-jsdoc": "error",
-        "require-unicode-regexp": "error",
+        "require-unicode-regexp": "off",
         "rest-spread-spacing": "error",
         "semi": "error",
         "semi-spacing": [

@@ -4,6 +4,7 @@ var App = (function() {
     this.totalLinesCompleted = 0;
     this.currentLine = 0;
     this.currentChar = 0;
+    this.currentTextIndex = 0;
     this.lastCorrect = 0;
     this.started = false;
   };
@@ -134,7 +135,30 @@ var App = (function() {
     console.log('  comments: ' + comments);
   };
 
-  App.prototype.initText = function(index) {
+  App.prototype.wrongButtonFlash = function(eventKey) {
+    var warning = document.querySelector('#wrong-button-warning');
+    var key = eventKey;
+
+    if ((/Tab|Shift|Control|Alt|CapsLock/).test(key)) {
+      return;
+    }
+
+    if (key === ' ') {
+      key = 'Space';
+    }
+
+    clearTimeout(this.timeout);
+    warning.innerHTML = key;
+    warning.style.transition = 'none';
+    warning.style.opacity = 0.8;
+
+    this.timeout = setTimeout(() => {
+      warning.style.transition = 'opacity 0.6s';
+      warning.style.opacity = 0;
+    }, 300);
+  };
+
+  App.prototype.initText = function() {
     const checkInput = function(e) {
       e.preventDefault();
       const chars = this.texts[0].lines[this.totalLinesCompleted].characters;
@@ -145,18 +169,21 @@ var App = (function() {
         || (e.key === 'Enter' && this.currentChar === chars.length - 1)
       ) {
         this.nextChar();
+      } else {
+        this.wrongButtonFlash(e.key);
       }
     };
 
-    this.texts[index].showText(0);
-    this.texts[index].input.addEventListener('keydown', checkInput.bind(this));
+    this.texts[this.currentTextIndex].showText(0);
+    this.texts[this.currentTextIndex].input.addEventListener('keydown', checkInput.bind(this));
     this.start();
   };
 
   App.prototype.run = function() {
     const cb = function(text) {
       this.addNewText(text);
-      this.initText(this.texts.length - 1);
+      this.currentTextIndex = this.texts.length - 1;
+      this.initText();
     };
 
     this.getText('./resources/text.txt', cb.bind(this));
