@@ -19,11 +19,11 @@ const Character = (function() {
       this.whiteSpace = true;
       this.character = '↓';
     }
-  }
+  };
 
   // Default values
   Character.prototype.type = 'char';
   Character.prototype.whiteSpace = false;
 
   return Character;
-})();
+}());
