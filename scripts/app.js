@@ -4,9 +4,10 @@ var App = (function() {
     this.totalLinesCompleted = 0;
     this.currentLine = 0;
     this.currentChar = 0;
+    this.currentTextIndex = 0;
     this.lastCorrect = 0;
     this.started = false;
-  }
+  };
 
   App.prototype.getText = function(url, callback) {
     const xhr = new XMLHttpRequest();
@@ -17,21 +18,42 @@ var App = (function() {
         console.log(this);
         callback(xhr.response);
       } else {
-        callback(xhr.response)
+        callback(xhr.response);
       }
-    }
+    };
 
     xhr.open('GET', url, true);
     xhr.respondeType = 'txt';
     xhr.onload = checkStatus;
     xhr.send();
-  }
+  };
+
+  App.prototype.initTextFocus = function() {
+    var input = document.getElementById('invis-input');
+    var codeArea = document.getElementById('code-area');
+
+    codeArea.addEventListener('click', () => {
+      input.focus();
+    });
+    input.addEventListener('blur', () => {
+      codeArea.classList.add('blur');
+    });
+    input.addEventListener('focus', () => {
+      codeArea.classList.remove('blur');
+    });
+  };
 
   App.prototype.addNewText = function(text) {
     const input = document.getElementById('invis-input');
     const codeArea = document.getElementById('code-area');
-    this.texts.push(new Text(text, input, codeArea, 10));
-  }
+
+    this.texts.push(new Text({
+      codearea: codeArea,
+      input,
+      maxLines: 10,
+      text
+    }));
+  };
 
   App.prototype.nextLine = function() {
     this.texts[0].removeLineHighlight(this.currentLine);
@@ -64,7 +86,7 @@ var App = (function() {
     this.currentChar = this.texts[0].lines[this.totalLinesCompleted].skipChars.length;
     this.texts[0].highlightChar(this.currentLine, this.currentChar);
     this.texts[0].highlightLine(this.currentLine);
-  }
+  };
 
   App.prototype.nextChar = function() {
     this.texts[0].removeCharHighlight(this.currentLine, this.currentChar);
@@ -78,13 +100,13 @@ var App = (function() {
     } else {
       this.texts[0].highlightChar(this.currentLine, this.currentChar);
     }
-  }
+  };
 
   App.prototype.end = function() {
     console.log('checking for end');
     this.started = false;
 
-    if (false) {
+    if (this.started) {
       this.texts[0].input.disabled = true;
       console.log('ended');
       return;
@@ -94,7 +116,7 @@ var App = (function() {
     this.texts[0].codearea.innerHTML = '';
     this.texts[0].showText(this.totalLinesCompleted);
     this.start();
-  }
+  };
 
   App.prototype.start = function() {
     let iter = 0;
@@ -106,7 +128,7 @@ var App = (function() {
         this.started = true;
         this.currentLine = iter;
         this.texts[0].highlightLine(iter);
-        this.currentChar = this.texts[0].lines[iter + this.totalLinesCompleted].skipChars.length
+        this.currentChar = this.texts[0].lines[iter + this.totalLinesCompleted].skipChars.length;
         this.texts[0].highlightChar(iter, this.currentChar);
       }
 
@@ -127,9 +149,32 @@ var App = (function() {
     console.log('  current line: ' + this.currentLine);
     console.log('  total lines completed: ' + this.totalLinesCompleted);
     console.log('  comments: ' + comments);
-  }
+  };
 
-  App.prototype.initText = function(index) {
+  App.prototype.wrongButtonFlash = function(eventKey) {
+    var warning = document.querySelector('#wrong-button-warning');
+    var key = eventKey;
+
+    if ((/Tab|Shift|Control|Alt|CapsLock/).test(key)) {
+      return;
+    }
+
+    if (key === ' ') {
+      key = 'Space';
+    }
+
+    clearTimeout(this.timeout);
+    warning.innerHTML = key;
+    warning.style.transition = 'none';
+    warning.style.opacity = 0.8;
+
+    this.timeout = setTimeout(() => {
+      warning.style.transition = 'opacity 0.6s';
+      warning.style.opacity = 0;
+    }, 300);
+  };
+
+  App.prototype.initText = function() {
     const checkInput = function(e) {
       e.preventDefault();
       const chars = this.texts[0].lines[this.totalLinesCompleted].characters;
@@ -140,25 +185,29 @@ var App = (function() {
         || (e.key === 'Enter' && this.currentChar === chars.length - 1)
       ) {
         this.nextChar();
+      } else {
+        this.wrongButtonFlash(e.key);
       }
-    }
+    };
 
-    this.texts[index].showText(0);
-    this.texts[index].input.addEventListener('keydown', checkInput.bind(this));
+    this.texts[this.currentTextIndex].showText(0);
+    this.texts[this.currentTextIndex].input.addEventListener('keydown', checkInput.bind(this));
     this.start();
-  }
+  };
 
   App.prototype.run = function() {
     const cb = function(text) {
       this.addNewText(text);
-      this.initText(this.texts.length - 1);
-    }
+      this.initTextFocus();
+      this.currentTextIndex = this.texts.length - 1;
+      this.initText();
+    };
 
     this.getText('./resources/text.txt', cb.bind(this));
-  }
+  };
 
   return App;
-})();
+}());
 
 const application = new App();
 application.run();

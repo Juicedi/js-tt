@@ -1,9 +1,40 @@
 html {
   background-color: black;
 }
+
+body {
+  margin: 0;
+}
+
+#application {
+  position: relative;
+}
+
+#wrong-button-warning {
+  background-color: #a00;
+  border-radius: 10px;
+  color: white;
+  font-size: 40px;
+  left: 50%;
+  padding: 10px 10px;
+  pointer-events: none;
+  position: absolute;
+  top: 50%;
+  opacity: 0;
+  transform: translate(-50%, -50%);
+}
+
 #code-area {
   font-family: consolas;
+  width: 100%;
   background-color: rgba(230, 230, 255, 0.95);
+}
+
+#invis-input {
+  position: absolute;
+  opacity: 0;
+  top: 0;
+  pointer-events: none;
 }
 
 .highlight {
@@ -24,6 +55,11 @@ span.highlight {
   animation-name: blinking;
   animation-duration: 2s;
   animation-iteration-count: infinite;
+}
+
+.blur span.highlight {
+  background-color: transparent;
+  animation-name: none;
 }
 
 @keyframes blinking {
