@@ -1,11 +1,10 @@
 /* globals Line */
 const Text = (function() {
 
-  // Constructor: text, input, codearea, maxLines
+  // Constructor: text, codearea, maxLines
   const Text = function(options) {
     this.maxLines = options.maxLines;
-    this.input = options.input;
-    this.codearea = options.codearea;
+    this.codearea = options.codeArea;
 
     this.lines = [];
     this.fullText = options.text;

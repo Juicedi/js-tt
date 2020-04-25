@@ -1,214 +1,191 @@
-var App = (function() {
-  var App = function() {
-    this.texts = [];
-    this.totalLinesCompleted = 0;
-    this.currentLine = 0;
-    this.currentChar = 0;
-    this.currentTextIndex = 0;
-    this.lastCorrect = 0;
-    this.started = false;
-  };
+let totalLinesCompleted = 0;
+let started = false;
+let currentLine = 0;
+let currentChar = 0;
 
-  App.prototype.getText = function(url, callback) {
-    const xhr = new XMLHttpRequest();
-    const checkStatus = () => {
-      const status = xhr.status;
+const initTextFocus = function(input, codeArea) {
+  codeArea.addEventListener('click', () => {
+    input.focus();
+  });
 
-      if (status === 200) {
-        console.log(this);
-        callback(xhr.response);
-      } else {
-        callback(xhr.response);
-      }
-    };
+  input.addEventListener('blur', () => {
+    codeArea.classList.add('blur');
+  });
 
-    xhr.open('GET', url, true);
-    xhr.respondeType = 'txt';
-    xhr.onload = checkStatus;
-    xhr.send();
-  };
+  input.addEventListener('focus', () => {
+    codeArea.classList.remove('blur');
+  });
+};
 
-  App.prototype.initTextFocus = function() {
-    var input = document.getElementById('invis-input');
-    var codeArea = document.getElementById('code-area');
+const start = function(text) {
+  let iter = 0;
+  let comments = 0;
 
-    codeArea.addEventListener('click', () => {
-      input.focus();
-    });
-    input.addEventListener('blur', () => {
-      codeArea.classList.add('blur');
-    });
-    input.addEventListener('focus', () => {
-      codeArea.classList.remove('blur');
-    });
-  };
+  while (text.lines[totalLinesCompleted + iter].shown === true) {
+    if (!started && text.lines[totalLinesCompleted + iter].status !== 'skip') {
+      started = true;
+      currentLine = iter;
+      text.highlightLine(iter);
+      currentChar = text.lines[iter + totalLinesCompleted].skipChars.length;
+      text.highlightChar(iter, currentChar);
+    }
 
-  App.prototype.addNewText = function(text) {
-    const input = document.getElementById('invis-input');
-    const codeArea = document.getElementById('code-area');
+    if (text.lines[totalLinesCompleted + iter].status === 'skip') {
+      // Add the skipped comment-lines to the total completed lines number.
+      text.lowlightLine(iter);
 
-    this.texts.push(new Text({
-      codearea: codeArea,
-      input,
-      maxLines: 10,
-      text
-    }));
-  };
-
-  App.prototype.nextLine = function() {
-    this.texts[0].removeLineHighlight(this.currentLine);
-    this.currentLine++;
-    this.totalLinesCompleted++;
-    console.log('changing line');
-    console.log('  current line: ' + this.currentLine);
-    console.log('  total lines completed: ' + this.totalLinesCompleted);
-
-    // Skip lines until valid line is found. Do this until all shown lines have
-    // been looked through
-    for (let i = 0; this.texts[0].lines[i + this.totalLinesCompleted - 1].shown; i++) {
-      if (this.texts[0].lines[this.totalLinesCompleted].status === 'skip') {
-        this.currentLine++;
-        this.totalLinesCompleted++;
-        console.log('skipped line');
-        console.log('  current line: ' + this.currentLine);
-        console.log('  total lines completed: ' + this.totalLinesCompleted);
-      } else {
-        break;
+      if (!started) {
+        comments++;
       }
     }
 
-    // End the current exercise if end of lines have been reached
-    if (!this.texts[0].lines[this.totalLinesCompleted].shown) {
-      this.end();
-      return;
-    }
+    iter++;
+  }
 
-    this.currentChar = this.texts[0].lines[this.totalLinesCompleted].skipChars.length;
-    this.texts[0].highlightChar(this.currentLine, this.currentChar);
-    this.texts[0].highlightLine(this.currentLine);
-  };
+  totalLinesCompleted += comments;
+};
 
-  App.prototype.nextChar = function() {
-    this.texts[0].removeCharHighlight(this.currentLine, this.currentChar);
-    this.currentChar++;
+const end = function(text, input) {
+  //
+  // TODO: Should the started value be some kind of a check? Like is the last
+  // text chunk been completed or something
+  //
 
-    if (this.texts[0].lines[this.totalLinesCompleted].characters.length === this.currentChar) {
-      console.log('Start line change from:');
-      console.log('  current line: ' + this.currentLine);
-      console.log('  total lines completed: ' + this.totalLinesCompleted);
-      this.nextLine();
+  started = false;
+
+  if (started) {
+    input.disabled = true;
+    console.log('ended');
+    return;
+  }
+
+  currentLine = 0;
+  text.codearea.innerHTML = '';
+  text.showText(totalLinesCompleted);
+  start(text);
+};
+
+const nextLine = function(text) {
+  text.removeLineHighlight(currentLine);
+  currentLine++;
+  totalLinesCompleted++;
+
+  // Skip lines until valid line is found. Do this until all shown lines have
+  // been looked through
+  for (let i = 0; text.lines[i + totalLinesCompleted - 1].shown; i++) {
+    if (text.lines[totalLinesCompleted].status === 'skip') {
+      currentLine++;
+      totalLinesCompleted++;
     } else {
-      this.texts[0].highlightChar(this.currentLine, this.currentChar);
+      break;
     }
-  };
+  }
 
-  App.prototype.end = function() {
-    console.log('checking for end');
-    this.started = false;
+  // End the current exercise if end of lines have been reached
+  if (!text.lines[totalLinesCompleted].shown) {
+    end(text);
+    return;
+  }
 
-    if (this.started) {
-      this.texts[0].input.disabled = true;
-      console.log('ended');
+  currentChar = text.lines[totalLinesCompleted].skipChars.length;
+  text.highlightChar(currentLine, currentChar);
+  text.highlightLine(currentLine);
+};
+
+const wrongButtonFlash = function(eventKey) {
+  const warning = document.querySelector('#wrong-button-warning');
+  let key = eventKey;
+
+  if (key === ' ') {
+    key = 'Space';
+  }
+
+  warning.innerHTML = key;
+  warning.style.transition = 'none';
+  warning.style.opacity = 0.8;
+
+  return setTimeout(() => {
+    warning.style.transition = 'opacity 0.6s';
+    warning.style.opacity = 0;
+  }, 600);
+};
+
+const createInputHandler = (text) => {
+  let warningTimeout = null;
+
+  return (e) => {
+    e.preventDefault();
+    const chars = text.lines[totalLinesCompleted].characters;
+
+    if ((/Tab|Shift|Control|Alt|CapsLock/).test(e.key)) {
       return;
     }
 
-    this.currentLine = 0;
-    this.texts[0].codearea.innerHTML = '';
-    this.texts[0].showText(this.totalLinesCompleted);
-    this.start();
-  };
+    const isCurrentChar = e.key === chars[currentChar].character;
+    const isLinebreak = (e.key === 'Enter' && currentChar === chars.length - 1);
 
-  App.prototype.start = function() {
-    let iter = 0;
-    let comments = 0;
-    console.log(this.texts[0].lines);
+    const lineLength = text.lines[totalLinesCompleted].characters.length;
+    const isLastChar = lineLength === currentChar + 1;
 
-    while (this.texts[0].lines[this.totalLinesCompleted + iter].shown === true) {
-      if (!this.started && this.texts[0].lines[this.totalLinesCompleted + iter].status !== 'skip') {
-        this.started = true;
-        this.currentLine = iter;
-        this.texts[0].highlightLine(iter);
-        this.currentChar = this.texts[0].lines[iter + this.totalLinesCompleted].skipChars.length;
-        this.texts[0].highlightChar(iter, this.currentChar);
+    const shouldGoNextChar = isCurrentChar || isLinebreak;
+    const shouldGoNextLine = shouldGoNextChar && isLastChar;
+
+    if (shouldGoNextLine) {
+      text.removeCharHighlight(currentLine, currentChar);
+      currentChar++;
+      nextLine(text);
+    } else if (shouldGoNextChar) {
+      text.removeCharHighlight(currentLine, currentChar);
+      currentChar++;
+      text.highlightChar(currentLine, currentChar);
+    } else {
+      if (warningTimeout !== null) {
+        clearTimeout(warningTimeout);
+        warningTimeout = null;
       }
 
-      if (this.texts[0].lines[this.totalLinesCompleted + iter].status === 'skip') {
-        // Add the skipped comment-lines to the total completed lines number.
-        this.texts[0].lowlightLine(iter);
+      warningTimeout = wrongButtonFlash(e.key);
+    }
+  };
+};
 
-        if (!this.started) {
-          comments++;
-        }
-      }
+const runApp = function(rawText) {
+  const input = document.getElementById('invis-input');
+  const codeArea = document.getElementById('code-area');
 
-      iter++;
+  const options = {
+    codeArea,
+    input,
+    maxLines: 2,
+    text: rawText
+  };
+
+  const text = new Text(options);
+
+  initTextFocus(input, codeArea);
+
+  const handleInput = createInputHandler(text);
+  input.addEventListener('keydown', handleInput);
+
+  text.showText(0);
+  start(text);
+};
+
+const getText = function(url, callback) {
+  const xhr = new XMLHttpRequest();
+
+  xhr.open('GET', url, true);
+  xhr.respondType = 'txt';
+
+  xhr.onload = () => {
+    if (xhr.status !== 200) {
+      throw new Error(`couldn't load text\nxhr status = ${xhr.status}`);
     }
 
-    this.totalLinesCompleted += comments;
-    console.log('starting a new text');
-    console.log('  current line: ' + this.currentLine);
-    console.log('  total lines completed: ' + this.totalLinesCompleted);
-    console.log('  comments: ' + comments);
+    callback(xhr.response);
   };
 
-  App.prototype.wrongButtonFlash = function(eventKey) {
-    var warning = document.querySelector('#wrong-button-warning');
-    var key = eventKey;
+  xhr.send();
+};
 
-    if ((/Tab|Shift|Control|Alt|CapsLock/).test(key)) {
-      return;
-    }
-
-    if (key === ' ') {
-      key = 'Space';
-    }
-
-    clearTimeout(this.timeout);
-    warning.innerHTML = key;
-    warning.style.transition = 'none';
-    warning.style.opacity = 0.8;
-
-    this.timeout = setTimeout(() => {
-      warning.style.transition = 'opacity 0.6s';
-      warning.style.opacity = 0;
-    }, 300);
-  };
-
-  App.prototype.initText = function() {
-    const checkInput = function(e) {
-      e.preventDefault();
-      const chars = this.texts[0].lines[this.totalLinesCompleted].characters;
-      this.value = '';
-
-      if (
-        e.key === chars[this.currentChar].character
-        || (e.key === 'Enter' && this.currentChar === chars.length - 1)
-      ) {
-        this.nextChar();
-      } else {
-        this.wrongButtonFlash(e.key);
-      }
-    };
-
-    this.texts[this.currentTextIndex].showText(0);
-    this.texts[this.currentTextIndex].input.addEventListener('keydown', checkInput.bind(this));
-    this.start();
-  };
-
-  App.prototype.run = function() {
-    const cb = function(text) {
-      this.addNewText(text);
-      this.initTextFocus();
-      this.currentTextIndex = this.texts.length - 1;
-      this.initText();
-    };
-
-    this.getText('./resources/text.txt', cb.bind(this));
-  };
-
-  return App;
-}());
-
-const application = new App();
-application.run();
-
+getText('./resources/text.txt', runApp);
