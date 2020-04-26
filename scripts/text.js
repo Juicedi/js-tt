@@ -1,4 +1,5 @@
 /* globals Line */
+// eslint-disable-next-line no-unused-vars
 const Text = (function() {
 
   // Constructor: text, codearea, maxLines
@@ -12,7 +13,7 @@ const Text = (function() {
     const textLines = options.text.split('\n');
     const len = textLines.length;
 
-    for (let i = 0; i < len; i++) {
+    for (let i = 0; i < len; i += 1) {
       const newLine = new Line(textLines[i]);
       this.lines.push(newLine);
     }
@@ -24,7 +25,7 @@ const Text = (function() {
 
     while (validLineNr < this.maxLines && iterator < this.lines.length) {
       if (this.lines[iterator].status !== 'skip') {
-        validLineNr++;
+        validLineNr += 1;
       }
 
       const newLine = document.createElement('DIV');
@@ -32,7 +33,7 @@ const Text = (function() {
       this.codearea.appendChild(newLine);
 
       this.lines[iterator].shown = true;
-      iterator++;
+      iterator += 1;
     }
   };
 

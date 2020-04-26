@@ -3,23 +3,12 @@ let started = false;
 let currentLine = 0;
 let currentChar = 0;
 
-const initTextFocus = function(input, codeArea) {
-  codeArea.addEventListener('click', () => {
-    input.focus();
-  });
-
-  input.addEventListener('blur', () => {
-    codeArea.classList.add('blur');
-  });
-
-  input.addEventListener('focus', () => {
-    codeArea.classList.remove('blur');
-  });
-};
-
-const start = function(text) {
+const start = function(text, startLine) {
   let iter = 0;
   let comments = 0;
+
+  text.codearea.innerHTML = '';
+  text.showText(startLine);
 
   while (text.lines[totalLinesCompleted + iter].shown === true) {
     if (!started && text.lines[totalLinesCompleted + iter].status !== 'skip') {
@@ -35,11 +24,11 @@ const start = function(text) {
       text.lowlightLine(iter);
 
       if (!started) {
-        comments++;
+        comments += 1;
       }
     }
 
-    iter++;
+    iter += 1;
   }
 
   totalLinesCompleted += comments;
@@ -60,36 +49,7 @@ const end = function(text, input) {
   }
 
   currentLine = 0;
-  text.codearea.innerHTML = '';
-  text.showText(totalLinesCompleted);
-  start(text);
-};
-
-const nextLine = function(text) {
-  text.removeLineHighlight(currentLine);
-  currentLine++;
-  totalLinesCompleted++;
-
-  // Skip lines until valid line is found. Do this until all shown lines have
-  // been looked through
-  for (let i = 0; text.lines[i + totalLinesCompleted - 1].shown; i++) {
-    if (text.lines[totalLinesCompleted].status === 'skip') {
-      currentLine++;
-      totalLinesCompleted++;
-    } else {
-      break;
-    }
-  }
-
-  // End the current exercise if end of lines have been reached
-  if (!text.lines[totalLinesCompleted].shown) {
-    end(text);
-    return;
-  }
-
-  currentChar = text.lines[totalLinesCompleted].skipChars.length;
-  text.highlightChar(currentLine, currentChar);
-  text.highlightLine(currentLine);
+  start(text, totalLinesCompleted);
 };
 
 const wrongButtonFlash = function(eventKey) {
@@ -110,6 +70,28 @@ const wrongButtonFlash = function(eventKey) {
   }, 600);
 };
 
+const skipInvalidLines = function(text) {
+  currentLine += 1;
+  totalLinesCompleted += 1;
+
+  // Skip lines until valid line is found. Do this until all shown lines have
+  // been looked through
+  for (let i = 0; text.lines[i + totalLinesCompleted - 1].shown; i += 1) {
+    if (text.lines[totalLinesCompleted].status === 'skip') {
+      currentLine += 1;
+      totalLinesCompleted += 1;
+    } else {
+      break;
+    }
+  }
+};
+
+const highlightNextLine = function(text) {
+  currentChar = text.lines[totalLinesCompleted].skipChars.length;
+  text.highlightChar(currentLine, currentChar);
+  text.highlightLine(currentLine);
+};
+
 const createInputHandler = (text) => {
   let warningTimeout = null;
 
@@ -123,20 +105,26 @@ const createInputHandler = (text) => {
 
     const isCurrentChar = e.key === chars[currentChar].character;
     const isLinebreak = (e.key === 'Enter' && currentChar === chars.length - 1);
-
+    const shouldGoNextChar = isCurrentChar || isLinebreak;
     const lineLength = text.lines[totalLinesCompleted].characters.length;
     const isLastChar = lineLength === currentChar + 1;
-
-    const shouldGoNextChar = isCurrentChar || isLinebreak;
     const shouldGoNextLine = shouldGoNextChar && isLastChar;
 
     if (shouldGoNextLine) {
       text.removeCharHighlight(currentLine, currentChar);
-      currentChar++;
-      nextLine(text);
+      currentChar += 1;
+      text.removeLineHighlight(currentLine);
+      skipInvalidLines(text);
+
+      // End the current exercise if end of lines have been reached
+      if (!text.lines[totalLinesCompleted].shown) {
+        end(text);
+      }
+
+      highlightNextLine(text);
     } else if (shouldGoNextChar) {
       text.removeCharHighlight(currentLine, currentChar);
-      currentChar++;
+      currentChar += 1;
       text.highlightChar(currentLine, currentChar);
     } else {
       if (warningTimeout !== null) {
@@ -147,6 +135,23 @@ const createInputHandler = (text) => {
       warningTimeout = wrongButtonFlash(e.key);
     }
   };
+};
+
+const initTextFocus = function(text, input, codeArea) {
+  const handleInput = createInputHandler(text);
+  input.addEventListener('keydown', handleInput);
+
+  codeArea.addEventListener('click', () => {
+    input.focus();
+  });
+
+  input.addEventListener('blur', () => {
+    codeArea.classList.add('blur');
+  });
+
+  input.addEventListener('focus', () => {
+    codeArea.classList.remove('blur');
+  });
 };
 
 const runApp = function(rawText) {
@@ -162,13 +167,8 @@ const runApp = function(rawText) {
 
   const text = new Text(options);
 
-  initTextFocus(input, codeArea);
-
-  const handleInput = createInputHandler(text);
-  input.addEventListener('keydown', handleInput);
-
-  text.showText(0);
-  start(text);
+  initTextFocus(text, input, codeArea);
+  start(text, 0);
 };
 
 const getText = function(url, callback) {

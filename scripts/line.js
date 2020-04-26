@@ -1,4 +1,5 @@
 /* globals Character */
+// eslint-disable-next-line no-unused-vars
 const Line = (function() {
 
   // Constructor
@@ -7,17 +8,16 @@ const Line = (function() {
     this.skipChars = [];
 
     let okChar = false;
-    const comment = [];
 
-    for (let i = 0; i < line.length; i++) {
+    for (let i = 0; i < line.length; i += 1) {
       this.characters.push(new Character(line[i]));
-      const char = this.characters[i];
+      const character = this.characters[i];
 
       if (!okChar) {
-        if (!char.whiteSpace) {
-          okChar = true;
-        } else {
+        if (character.whiteSpace) {
           this.skipChars.push(i);
+        } else {
+          okChar = true;
         }
       }
     }
@@ -59,7 +59,7 @@ const Line = (function() {
   Line.prototype.shown = false;
 
   Line.prototype.appendChars = function(target) {
-    for (let i = 0; i < this.characters.length; i++) {
+    for (let i = 0; i < this.characters.length; i += 1) {
       const newCharacter = document.createElement('SPAN');
       newCharacter.innerHTML = this.characters[i].character;
       target.appendChild(newCharacter);
@@ -68,4 +68,3 @@ const Line = (function() {
 
   return Line;
 }());
-

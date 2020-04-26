@@ -170,7 +170,7 @@ module.exports = {
         "no-octal-escape": "error",
         "no-param-reassign": "error",
         "no-path-concat": "error",
-        "no-plusplus": "off",
+        "no-plusplus": "error",
         "no-process-env": "error",
         "no-process-exit": "error",
         "no-proto": "error",
