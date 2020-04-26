@@ -6,16 +6,21 @@ const Text = (function() {
   const Text = function(options) {
     this.maxLines = options.maxLines;
     this.codearea = options.codeArea;
-
     this.lines = [];
     this.fullText = options.text;
 
     const textLines = options.text.split('\n');
+
+    // Remove last empty line
+    textLines.pop();
     const len = textLines.length;
 
     for (let i = 0; i < len; i += 1) {
-      const newLine = new Line(textLines[i]);
-      this.lines.push(newLine);
+      const newline = i === len - 1
+        ? new Line(textLines[i])
+        : new Line(textLines[i], true);
+
+      this.lines.push(newline);
     }
   };
 

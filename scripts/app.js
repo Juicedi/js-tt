@@ -3,7 +3,7 @@ let started = false;
 let currentLine = 0;
 let currentChar = 0;
 
-const start = function(text, startLine) {
+const showTextChunk = function(text, startLine) {
   let iter = 0;
   let comments = 0;
 
@@ -29,27 +29,14 @@ const start = function(text, startLine) {
     }
 
     iter += 1;
+
+    // The last line has just been iterated over, no need to continue
+    if (typeof text.lines[totalLinesCompleted + iter] === 'undefined') {
+      break;
+    }
   }
 
   totalLinesCompleted += comments;
-};
-
-const end = function(text, input) {
-  //
-  // TODO: Should the started value be some kind of a check? Like is the last
-  // text chunk been completed or something
-  //
-
-  started = false;
-
-  if (started) {
-    input.disabled = true;
-    console.log('ended');
-    return;
-  }
-
-  currentLine = 0;
-  start(text, totalLinesCompleted);
 };
 
 const wrongButtonFlash = function(eventKey) {
@@ -71,15 +58,19 @@ const wrongButtonFlash = function(eventKey) {
 };
 
 const skipInvalidLines = function(text) {
-  currentLine += 1;
-  totalLinesCompleted += 1;
+  let iter = 0;
 
   // Skip lines until valid line is found. Do this until all shown lines have
   // been looked through
-  for (let i = 0; text.lines[i + totalLinesCompleted - 1].shown; i += 1) {
+  while (text.lines[iter + totalLinesCompleted - 1].shown) {
     if (text.lines[totalLinesCompleted].status === 'skip') {
       currentLine += 1;
       totalLinesCompleted += 1;
+      iter += 1;
+
+      if (typeof text.lines[iter + totalLinesCompleted - 1] === 'undefined') {
+        break;
+      }
     } else {
       break;
     }
@@ -87,12 +78,13 @@ const skipInvalidLines = function(text) {
 };
 
 const highlightNextLine = function(text) {
+  skipInvalidLines(text);
   currentChar = text.lines[totalLinesCompleted].skipChars.length;
   text.highlightChar(currentLine, currentChar);
   text.highlightLine(currentLine);
 };
 
-const createInputHandler = (text) => {
+const createInputHandler = (text, input) => {
   let warningTimeout = null;
 
   return (e) => {
@@ -104,23 +96,32 @@ const createInputHandler = (text) => {
     }
 
     const isCurrentChar = e.key === chars[currentChar].character;
-    const isLinebreak = (e.key === 'Enter' && currentChar === chars.length - 1);
+    const isLinebreak = e.key === 'Enter' && currentChar === chars.length - 1;
     const shouldGoNextChar = isCurrentChar || isLinebreak;
     const lineLength = text.lines[totalLinesCompleted].characters.length;
     const isLastChar = lineLength === currentChar + 1;
     const shouldGoNextLine = shouldGoNextChar && isLastChar;
+    const shouldEnd = shouldGoNextLine
+      && totalLinesCompleted + 1 === text.lines.length;
+    const shouldStartNextTextChunk = !shouldEnd && shouldGoNextLine
+      && !text.lines[totalLinesCompleted + 1].shown;
 
-    if (shouldGoNextLine) {
+    if (shouldEnd) {
       text.removeCharHighlight(currentLine, currentChar);
-      currentChar += 1;
       text.removeLineHighlight(currentLine);
-      skipInvalidLines(text);
-
-      // End the current exercise if end of lines have been reached
-      if (!text.lines[totalLinesCompleted].shown) {
-        end(text);
-      }
-
+      console.log('whole text is now finished');
+      input.disabled = true;
+      // TODO: Do something else on finish?
+    } else if (shouldStartNextTextChunk) {
+      currentLine = 0;
+      totalLinesCompleted += 1;
+      showTextChunk(text, totalLinesCompleted);
+      highlightNextLine(text);
+    } else if (shouldGoNextLine) {
+      text.removeCharHighlight(currentLine, currentChar);
+      text.removeLineHighlight(currentLine);
+      currentLine += 1;
+      totalLinesCompleted += 1;
       highlightNextLine(text);
     } else if (shouldGoNextChar) {
       text.removeCharHighlight(currentLine, currentChar);
@@ -138,7 +139,7 @@ const createInputHandler = (text) => {
 };
 
 const initTextFocus = function(text, input, codeArea) {
-  const handleInput = createInputHandler(text);
+  const handleInput = createInputHandler(text, input);
   input.addEventListener('keydown', handleInput);
 
   codeArea.addEventListener('click', () => {
@@ -161,14 +162,14 @@ const runApp = function(rawText) {
   const options = {
     codeArea,
     input,
-    maxLines: 2,
+    maxLines: 4,
     text: rawText
   };
 
   const text = new Text(options);
 
   initTextFocus(text, input, codeArea);
-  start(text, 0);
+  showTextChunk(text, 0);
 };
 
 const getText = function(url, callback) {

@@ -3,7 +3,7 @@
 const Line = (function() {
 
   // Constructor
-  const Line = function(line) {
+  const Line = function(line, newline) {
     this.characters = [];
     this.skipChars = [];
 
@@ -22,22 +22,22 @@ const Line = (function() {
       }
     }
 
+    if (newline === true) {
+      this.characters.push(new Character('\n'));
+    }
+
     // Check if the line is a comment
     if ((/\/\*.*\*\//).test(line)) {
-      // Block comment on the same line
-      this.comment = true;
+      this.comment = 'line';
       this.status = 'skip';
     } else if ((/\/\*/).test(line)) {
-      // Comment start
       this.comment = 'start';
       this.status = 'skip';
     } else if ((/\*\//).test(line)) {
-      // Comment end
       this.comment = 'end';
       this.status = 'skip';
     } else if ((/\/\//).test(line)) {
-      // Line comment
-      this.comment = true;
+      this.comment = 'line';
       this.status = 'skip';
     }
     // TODO: Check if line is inside of a block comment ie. below
