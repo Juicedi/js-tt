@@ -98,7 +98,13 @@ module.exports = {
         "max-depth": "error",
         "max-len": "off",
         "max-lines": "error",
-        "max-lines-per-function": "error",
+        "max-lines-per-function": [
+          "error", {
+            "max": 50,
+            "skipBlankLines": true,
+            "skipComments": true,
+          },
+        ],
         "max-nested-callbacks": "error",
         "max-params": "error",
         "max-statements": "off",
@@ -117,7 +123,7 @@ module.exports = {
         "no-array-constructor": "error",
         "no-async-promise-executor": "error",
         "no-await-in-loop": "error",
-        "no-bitwise": "error",
+        "no-bitwise": "off",
         "no-buffer-constructor": "error",
         "no-caller": "error",
         "no-catch-shadow": "error",
