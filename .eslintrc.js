@@ -98,13 +98,7 @@ module.exports = {
         "max-depth": "error",
         "max-len": "off",
         "max-lines": "error",
-        "max-lines-per-function": [
-          "error", {
-            "max": 50,
-            "skipBlankLines": true,
-            "skipComments": true,
-          },
-        ],
+        "max-lines-per-function": "off",
         "max-nested-callbacks": "error",
         "max-params": "error",
         "max-statements": "off",
@@ -219,7 +213,7 @@ module.exports = {
         "no-whitespace-before-property": "error",
         "no-with": "error",
         "nonblock-statement-body-position": "error",
-        "object-curly-newline": "error",
+        "object-curly-newline": "off",
         "object-curly-spacing": "error",
         "object-property-newline": "error",
         "object-shorthand": "error",

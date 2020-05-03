@@ -22,10 +22,6 @@ const Line = (function() {
       }
     }
 
-    if (newline === true) {
-      this.characters.push(new Character('\n'));
-    }
-
     // Check if the line is a comment
     if ((/\/\*.*\*\//).test(line)) {
       this.comment = 'line';
@@ -43,8 +39,12 @@ const Line = (function() {
     // TODO: Check if line is inside of a block comment ie. below
     // Imma block <--- this line here
 
+    if (newline === true && this.status !== 'skip') {
+      this.characters.push(new Character('\n'));
+    }
+
     // Check if the line is empty
-    if (line.length === 1 && (line[0] === '\n' || line[0] === '\r')) {
+    if (line.length === 0) {
       this.status = 'skip';
     }
 
@@ -56,15 +56,6 @@ const Line = (function() {
   // Default values
   Line.prototype.status = 'ok';
   Line.prototype.comment = false;
-  Line.prototype.shown = false;
-
-  Line.prototype.appendChars = function(target) {
-    for (let i = 0; i < this.characters.length; i += 1) {
-      const newCharacter = document.createElement('SPAN');
-      newCharacter.innerHTML = this.characters[i].character;
-      target.appendChild(newCharacter);
-    }
-  };
 
   return Line;
 }());
